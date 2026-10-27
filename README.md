@@ -1,49 +1,53 @@
-# HR Harmony – HR Analytics Dashboard (Power BI)
+# HR Harmony – Tableau de bord RH sous Power BI
 
-An end-to-end BI project on **real, anonymised HR data from a Tunisian company**: a Python ETL pipeline consolidates four raw sources into a PostgreSQL star schema, and a Power BI dashboard tracks attendance, absenteeism, working hours and leave at employee, department and company level.
+Projet BI de bout en bout sur des **données RH réelles et anonymisées d'une entreprise tunisienne**. Un pipeline ETL en Python rassemble quatre sources brutes dans un modèle en étoile sous PostgreSQL, puis un tableau de bord Power BI suit la présence, l'absentéisme, le temps de travail et les congés, au niveau de l'employé, du département et de l'entreprise.
 
-## Data
+![Tableau de bord HR Harmony](dashboard.png)
 
-- **Sources (4):** employee database (SQL), daily attendance logs, absences and leave records (Excel)
-- **Scope:** 113 employees, 13 departments, October – December 2022 (65 working days)
-- **Privacy:** the raw data is not published; employee and department names are replaced by pseudonyms in the dashboard
+## Données
 
-## ETL pipeline (`etlprocess.ipynb`)
+- **4 sources** : base des employés (SQL), pointages quotidiens, absences et congés (fichiers Excel)
+- **Périmètre** : 113 employés, 13 départements, d'octobre à décembre 2022 (65 jours ouvrés)
+- **Confidentialité** : les données brutes ne sont pas publiées ; les noms des employés et des départements sont remplacés par des pseudonymes
 
-1. Convert the Excel sheets to JSON
-2. **Match employee names across files** with fuzzy matching (RapidFuzz, similarity threshold of 70), since the same person was spelled differently in each source
-3. Standardise dates (`YYYY-MM-DD`) and times (`HH:MM:SS`)
-4. Compute total working time and overtime per day, and leave duration (including half days)
-5. Build the fact table and the dimensions, then load them into PostgreSQL
+## Pipeline ETL (`etlprocess.ipynb`)
 
-## Data model (star schema)
+1. Conversion des fichiers Excel en JSON
+2. **Rapprochement des noms d'employés entre les fichiers** par correspondance floue (RapidFuzz, seuil de similarité de 70), car une même personne était orthographiée différemment selon la source
+3. Standardisation des dates (`AAAA-MM-JJ`) et des heures (`HH:MM:SS`)
+4. Calcul du temps de travail et des heures supplémentaires par jour, ainsi que de la durée des congés (demi-journées comprises)
+5. Construction de la table de faits et des dimensions, puis chargement dans PostgreSQL
 
-| Table | Rows | Content |
+## Modèle de données (schéma en étoile)
+
+| Table | Lignes | Contenu |
 |---|---|---|
-| `hrfact` | 6,264 | One row per employee and day: present, absent, on leave, weekend, working time, overtime |
-| `employeedimension` | 113 | Employee ID, department, pseudonym |
-| `departmentdimension` | 13 | Department ID, headcount, pseudonym |
-| `datedimension` | 92 | Date, day, month, weekday, weekend flag |
+| `hrfact` | 6 264 | Une ligne par employé et par jour : présence, absence, congé, week-end, temps de travail, heures supplémentaires |
+| `employeedimension` | 113 | Identifiant de l'employé, département, pseudonyme |
+| `departmentdimension` | 13 | Identifiant du département, effectif, pseudonyme |
+| `datedimension` | 92 | Date, jour, mois, jour de la semaine, indicateur de week-end |
 
-## Dashboard (`projectbi.pbix`)
+## Tableau de bord (`projectbi.pbix`)
 
-The report contains **15 DAX measures**: absenteeism rate, presence rate, average working hours, leave days and leave rate.
+Le rapport repose sur **15 mesures DAX** : taux d'absentéisme, taux de présence, heures moyennes travaillées, jours et taux de congé.
 
-The main measures are **context-aware**: using `HASONEVALUE`, the same measure returns the individual value when one employee is selected, the department average when a department is selected, and the company average otherwise.
+Les principales mesures sont **dynamiques selon le contexte** : grâce à `HASONEVALUE`, une même mesure renvoie la valeur individuelle quand un employé est sélectionné, la moyenne du département quand un département est sélectionné, et la moyenne de l'entreprise sinon.
 
-Visuals: KPI cards and gauges, absences by department, trends over time, working hours vs overtime, with interactive slicers.
+**Visuels** : jauges (heures moyennes, taux d'absentéisme, taux de présence), présence et absences par employé, heures travaillées et heures supplémentaires, effectif par département, week-ends travaillés, jours de congé par employé, taux de présence par employé et absences par jour de la semaine, avec des filtres par employé, par département et par période.
 
-## Key findings (Q4 2022)
+## Principaux résultats (4e trimestre 2022)
 
-- Average absenteeism rate of **4.6%** over 65 working days
-- **All recorded absences are concentrated in 5 of the 13 departments**
-- More than **1,900 overtime hours** over the quarter
+- **6,7 heures** travaillées en moyenne par jour et par employé
+- Taux d'absentéisme moyen de **4,6 %** sur 65 jours ouvrés
+- **Toutes les absences enregistrées se concentrent dans 5 des 13 départements**
+- Plus de **1 900 heures supplémentaires** sur le trimestre
+- Le **lundi** est le jour avec le moins d'absences ; elles sont nettement plus nombreuses du mardi au vendredi
 
-## Tech stack
+## Outils
 
 Python (Pandas, RapidFuzz) · PostgreSQL · Power BI (DAX) · Google Colab
 
-## How to open
+## Ouvrir le projet
 
-- **ETL:** open `etlprocess.ipynb` in Google Colab or Jupyter (the raw files are not included)
-- **Dashboard:** open `projectbi.pbix` with Power BI Desktop
+- **ETL** : ouvrir `etlprocess.ipynb` dans Google Colab ou Jupyter (les fichiers bruts ne sont pas fournis)
+- **Tableau de bord** : ouvrir `projectbi.pbix` avec Power BI Desktop
